@@ -1,0 +1,106 @@
+{
+    "type": "bubble",
+    "size": "giga",
+    "header": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+            {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": "🔴 期限: 2024/05/20",
+                        "color": "#ffffff",
+                        "weight": "bold",
+                        "size": "sm",
+                        "flex": 1
+                    },
+                    {
+                        "type": "text",
+                        "text": "ランク: 土木A",
+                        "weight": "bold",
+                        "color": "#ffffff",
+                        "size": "sm",
+                        "align": "end",
+                        "flex": 0
+                    }
+                ]
+            }
+        ],
+        "backgroundColor": "#D32F2F",
+        "paddingAll": "12px"
+    },
+    "body": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+            {
+                "type": "text",
+                "text": "西部地区 舗装復旧工事",
+                "weight": "bold",
+                "size": "lg",
+                "wrap": true,
+                "margin": "md"
+            },
+            {
+                "type": "separator",
+                "margin": "md"
+            },
+            {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": "【3行要約】",
+                        "size": "xs",
+                        "color": "#aaaaaa",
+                        "weight": "bold",
+                        "margin": "lg"
+                    },
+                    {
+                        "type": "text",
+                        "text": "・古志田町地内の市道での水道管工事後の舗装復旧。\n・アスファルト舗装工 約350m2。\n・工期は契約日から約3ヶ月間。",
+                        "wrap": true,
+                        "size": "sm",
+                        "color": "#555555",
+                        "margin": "sm",
+                        "lineSpacing": "4px"
+                    }
+                ]
+            }
+        ]
+    },
+    "footer": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+            {
+                "type": "button",
+                "action": {
+                    "type": "uri",
+                    "label": "詳細PDFを開く",
+                    "uri": "https://example.com/pdf"
+                },
+                "style": "primary",
+                "color": "#212121",
+                "height": "sm"
+            },
+            {
+                "type": "button",
+                "action": {
+                    "type": "uri",
+                    "label": "カレンダー登録",
+                    "uri": "https://calendar.google.com/..."
+                },
+                "style": "link",
+                "height": "sm",
+                "margin": "sm",
+                "color": "#1E88E5"
+            }
+        ],
+        "paddingAll": "16px"
+    }
+}
