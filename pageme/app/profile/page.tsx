@@ -117,11 +117,11 @@ export default function ProfilePage() {
                     skills: pData.skills
                 });
                 setMatchedResult(result);
+                setLoading(false);
 
             } catch (err) {
                 console.error('Fetch error:', err);
                 setError('データの取得に失敗しました。');
-            } finally {
                 setLoading(false);
             }
         };
