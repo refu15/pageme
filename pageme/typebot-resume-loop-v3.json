@@ -1,0 +1,260 @@
+{
+    "version": "6.1",
+    "title": "AI Resume Interviewer (Loop v3)",
+    "events": [
+        {
+            "id": "event-start",
+            "type": "start",
+            "outgoingEdgeId": "edge-1",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 0
+            }
+        }
+    ],
+    "variables": [
+        {
+            "id": "var-chat_history",
+            "name": "chat_history"
+        },
+        {
+            "id": "var-user_input",
+            "name": "user_input"
+        },
+        {
+            "id": "var-ai_response",
+            "name": "ai_response"
+        }
+    ],
+    "groups": [
+        {
+            "id": "group-init",
+            "title": "Initialization",
+            "graphCoordinates": {
+                "x": 200,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "block-set-start",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "var-user_input",
+                        "expressionToEvaluate": "面接開始",
+                        "type": "Custom"
+                    }
+                },
+                {
+                    "id": "block-init-history",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "var-chat_history",
+                        "expressionToEvaluate": " ",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-2"
+        },
+        {
+            "id": "group-ai",
+            "title": "AI Processing",
+            "graphCoordinates": {
+                "x": 600,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "block-openai",
+                    "type": "openai",
+                    "options": {
+                        "action": "Create chat completion",
+                        "model": "gpt-4o",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "あなたは優秀なキャリアコーチAIです。\n以下はこれまでの会話履歴です：\n---\n{{chat_history}}\n---\n\nこの履歴を踏まえて、ユーザーの次の発言（User Input）に対して応答してください。\n\n【面接ルール】\n1. 質問は必ず**1回につき1つ**だけにする。\n2. 履歴情報に基づき、ユーザーの回答が抽象的なら「深掘り質問」をする。\n3. 以下の必須項目を全て回収するまで会話を続ける。\n\n【必須回収項目】\n1. 基本情報（名前・所属）\n2. 役割詳細\n3. スキル・資格\n4. プロジェクト名\n5. 成果 (数字で)\n6. 困難\n7. 工夫・行動 (Action)\n8. 学び・強み\n9. 無限にできること (Infinite Fuel)\n10. やる気が削がれること (Energy Drain)\n11. 起動コマンド\n\n【終了条件】\n全項目を聞き出し終えたら、最後に `[COMPLETED]` と出力してください。"
+                            },
+                            {
+                                "role": "user",
+                                "content": "{{user_input}}"
+                            }
+                        ],
+                        "responseMapping": [
+                            {
+                                "variableId": "var-ai_response"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "block-condition",
+                    "type": "Condition",
+                    "items": [
+                        {
+                            "id": "item-completed",
+                            "content": {
+                                "comparisons": [
+                                    {
+                                        "variableId": "var-ai_response",
+                                        "comparisonOperator": "Contains",
+                                        "value": "[COMPLETED]"
+                                    }
+                                ]
+                            },
+                            "outgoingEdgeId": "edge-to-end"
+                        }
+                    ]
+                }
+            ],
+            "outgoingEdgeId": "edge-3"
+        },
+        {
+            "id": "group-chat-ui",
+            "title": "Chat & Input",
+            "graphCoordinates": {
+                "x": 600,
+                "y": 400
+            },
+            "blocks": [
+                {
+                    "id": "block-ai-msg",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "{{ai_response}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "block-user-msg",
+                    "type": "text-input",
+                    "options": {
+                        "labels": {
+                            "placeholder": "回答を入力..."
+                        },
+                        "variableId": "var-user_input",
+                        "isLong": true
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-4"
+        },
+        {
+            "id": "group-update-history",
+            "title": "History Logic",
+            "graphCoordinates": {
+                "x": 200,
+                "y": 400
+            },
+            "blocks": [
+                {
+                    "id": "block-append-hist",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "var-chat_history",
+                        "expressionToEvaluate": "{{chat_history}}\nUser: {{user_input}}\nAI: {{ai_response}}",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-loop"
+        },
+        {
+            "id": "group-end",
+            "title": "End",
+            "graphCoordinates": {
+                "x": 1200,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "block-finish",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "ありがとうございました！履歴書を作成します。"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge-1",
+            "from": {
+                "eventId": "event-start"
+            },
+            "to": {
+                "groupId": "group-init",
+                "blockId": "block-set-start"
+            }
+        },
+        {
+            "id": "edge-2",
+            "from": {
+                "blockId": "block-init-history"
+            },
+            "to": {
+                "groupId": "group-ai",
+                "blockId": "block-openai"
+            }
+        },
+        {
+            "id": "edge-3",
+            "from": {
+                "blockId": "block-condition"
+            },
+            "to": {
+                "groupId": "group-chat-ui",
+                "blockId": "block-ai-msg"
+            }
+        },
+        {
+            "id": "edge-4",
+            "from": {
+                "blockId": "block-user-msg"
+            },
+            "to": {
+                "groupId": "group-update-history",
+                "blockId": "block-append-hist"
+            }
+        },
+        {
+            "id": "edge-loop",
+            "from": {
+                "blockId": "block-append-hist"
+            },
+            "to": {
+                "groupId": "group-ai",
+                "blockId": "block-openai"
+            }
+        },
+        {
+            "id": "edge-to-end",
+            "from": {
+                "blockId": "block-condition",
+                "itemId": "item-completed"
+            },
+            "to": {
+                "groupId": "group-end",
+                "blockId": "block-finish"
+            }
+        }
+    ]
+}

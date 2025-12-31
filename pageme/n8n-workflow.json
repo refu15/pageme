@@ -1,0 +1,170 @@
+{
+    "name": "Typebot Resume Processor",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "typebot-resume",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-1",
+            "name": "Webhook (Typebot)",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o-mini",
+                "messages": {
+                    "values": [
+                        {
+                            "role": "system",
+                            "content": "あなたはインタビュー記録から情報を抽出するAIです。\n\n以下の会話履歴から、指定された11項目を抽出し、JSON形式で出力してください。\n該当する情報がない場合は空文字列\"\"を入れてください。\n\n出力形式（JSONのみ、説明不要）:\n{\n  \"name\": \"名前\",\n  \"affiliation\": \"所属\",\n  \"role_detail\": \"役割詳細\",\n  \"skills\": [\"スキル1\", \"スキル2\"],\n  \"project_name\": \"プロジェクト名\",\n  \"achievement\": \"成果（数字含む）\",\n  \"challenge\": \"困難\",\n  \"action\": \"工夫・行動\",\n  \"learning_strength\": \"学び・強み\",\n  \"infinite_fuel\": \"無限にできること\",\n  \"energy_drain\": \"やる気が削がれること\",\n  \"activation_command\": \"起動コマンド\"\n}"
+                        },
+                        {
+                            "role": "user",
+                            "content": "=会話履歴:\n{{ $json.chat_history }}"
+                        }
+                    ]
+                },
+                "options": {
+                    "temperature": 0.3
+                }
+            },
+            "id": "openai-1",
+            "name": "OpenAI (Extract Data)",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 1.4,
+            "position": [
+                500,
+                300
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "YOUR_OPENAI_CREDENTIAL_ID",
+                    "name": "OpenAI Account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Parse the AI response as JSON\nconst aiResponse = $input.first().json.message.content;\nlet resumeData;\n\ntry {\n  // Extract JSON from the response (handle markdown code blocks)\n  let jsonStr = aiResponse;\n  if (aiResponse.includes('```json')) {\n    jsonStr = aiResponse.split('```json')[1].split('```')[0].trim();\n  } else if (aiResponse.includes('```')) {\n    jsonStr = aiResponse.split('```')[1].split('```')[0].trim();\n  }\n  resumeData = JSON.parse(jsonStr);\n} catch (e) {\n  resumeData = { error: 'Failed to parse AI response', raw: aiResponse };\n}\n\n// Get user_id from the webhook payload\nconst userId = $('Webhook (Typebot)').first().json.user_id || $('Webhook (Typebot)').first().json.email || 'unknown';\n\nreturn {\n  user_id: userId,\n  resume_data: resumeData\n};"
+            },
+            "id": "code-1",
+            "name": "Parse JSON",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                750,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "upsert",
+                "tableId": "profiles",
+                "dataMode": "defineBelow",
+                "valuesToSend": {
+                    "values": [
+                        {
+                            "column": "id",
+                            "value": "={{ $json.user_id }}"
+                        },
+                        {
+                            "column": "resume_data",
+                            "value": "={{ JSON.stringify($json.resume_data) }}"
+                        },
+                        {
+                            "column": "updated_at",
+                            "value": "={{ new Date().toISOString() }}"
+                        }
+                    ]
+                },
+                "conflictTarget": "id",
+                "options": {}
+            },
+            "id": "supabase-1",
+            "name": "Supabase (Upsert)",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "YOUR_SUPABASE_CREDENTIAL_ID",
+                    "name": "Supabase Account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={ \"success\": true, \"message\": \"Resume data saved\", \"user_id\": \"{{ $json.user_id }}\" }"
+            },
+            "id": "response-1",
+            "name": "Respond to Webhook",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                1250,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook (Typebot)": {
+            "main": [
+                [
+                    {
+                        "node": "OpenAI (Extract Data)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI (Extract Data)": {
+            "main": [
+                [
+                    {
+                        "node": "Parse JSON",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse JSON": {
+            "main": [
+                [
+                    {
+                        "node": "Supabase (Upsert)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Supabase (Upsert)": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    }
+}

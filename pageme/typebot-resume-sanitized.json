@@ -1,0 +1,265 @@
+{
+  "version": "6.1",
+  "id": "cmjllj4s6hdrldh0l",
+  "name": "AI Resume Interviewer (Sanitized v2)",
+  "events": [
+    {
+      "id": "cmjllj4s671rvaa3f",
+      "type": "start",
+      "outgoingEdgeId": "cmjllj4s6k2q8netc",
+      "graphCoordinates": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  ],
+  "variables": [
+    {
+      "id": "cmjllj4s6wpd91fhi",
+      "name": "chat_history",
+      "isSessionVariable": false
+    },
+    {
+      "id": "cmjllj4s61gy9isru",
+      "name": "user_input",
+      "isSessionVariable": false
+    },
+    {
+      "id": "cmjllj4s6m50efq7h",
+      "name": "ai_response",
+      "isSessionVariable": false
+    }
+  ],
+  "groups": [
+    {
+      "id": "cmjllj4s63jnqz67x",
+      "title": "Initialization",
+      "graphCoordinates": {
+        "x": 0,
+        "y": 0
+      },
+      "blocks": [
+        {
+          "id": "cmjllj4s6b9bm83qk",
+          "type": "Set variable",
+          "options": {
+            "variableId": "cmjllj4s61gy9isru",
+            "expressionToEvaluate": "面接開始",
+            "type": "Custom"
+          }
+        },
+        {
+          "id": "cmjllj4s69abbdmm2",
+          "type": "Set variable",
+          "options": {
+            "variableId": "cmjllj4s6wpd91fhi",
+            "expressionToEvaluate": " ",
+            "type": "Custom"
+          }
+        }
+      ],
+      "outgoingEdgeId": "cmjllj4s6nw09lv3c"
+    },
+    {
+      "id": "cmjllj4s6u8zwhsaa",
+      "title": "AI Logic",
+      "graphCoordinates": {
+        "x": 400,
+        "y": 0
+      },
+      "blocks": [
+        {
+          "id": "cmjllj4s6w55m0ttu",
+          "type": "openai",
+          "options": {
+            "credentialsId": "",
+            "action": "Create chat completion",
+            "model": "gpt-4o",
+            "messages": [
+              {
+                "role": "system",
+                "content": "あなたは優秀なキャリアコーチAIです。\\nユーザーとの対話を通じて、以下の「履歴書作成に必要な11の情報」を全て引き出してください。\\n一度に全ての質問をせず、**1つずつ**順番に聞いてください。\\nユーザーの回答が抽象的だったり浅い場合は、**必ず「深掘り質問」を行って**、具体的なエピソードや数字を引き出してください。\\n\\n【必須回収項目リスト】\\n1. 基本情報（名前・現在の所属）\\n2. 所属の詳細（部署・役職・学年等）\\n3. スキル・資格・リンク\\n4. アピールしたいプロジェクト名（タイトル）\\n5. その活動での具体的な「成果」(数字を含めるよう促す)\\n6. 直面した「困難・壁」\\n7. その壁を乗り越えた「工夫・行動」(Action) ※最重要。詳細に聞く。\\n8. 経験からの「学び」と、自覚している「強み」\\n9. 無限に湧くやる気の源泉 (Infinite Fuel / いくらやっても疲れないこと)\\n10. やる気を削ぐ要因 (Energy Drain / 苦手な環境)\\n11. 自分をうまく扱うための「起動コマンド」(連携のコツ)\\n\\n【ルール】\\n- 口調は親しみやすく、かつプロフェッショナルに。\\n- 1回の発言で質問は1つまで。\\n- 全ての項目を聞き出し終えたら、最後に必ず「[COMPLETED]」という文字列を含めて終了の挨拶をしてください。"
+              },
+              {
+                "role": "user",
+                "content": "{{cmjllj4s61gy9isru}}"
+              }
+            ],
+            "responseMapping": [
+              {
+                "variableId": "cmjllj4s6m50efq7h"
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmjllj4s6usolbzsn",
+          "type": "Condition",
+          "items": [
+            {
+              "id": "cmjllj4s6kiw4r0g6",
+              "content": {
+                "comparisons": [
+                  {
+                    "variableId": "cmjllj4s6m50efq7h",
+                    "comparisonOperator": "Contains",
+                    "value": "[COMPLETED]"
+                  }
+                ]
+              },
+              "outgoingEdgeId": "cmjllj4s64idfcj9e"
+            }
+          ]
+        }
+      ],
+      "outgoingEdgeId": "cmjllj4s62fulzd4d"
+    },
+    {
+      "id": "cmjllj4s6aymaj2np",
+      "title": "Chat UI",
+      "graphCoordinates": {
+        "x": 400,
+        "y": 400
+      },
+      "blocks": [
+        {
+          "id": "cmjllj4s63riufgrb",
+          "type": "text",
+          "content": {
+            "richText": [
+              {
+                "type": "p",
+                "children": [
+                  {
+                    "text": "{{cmjllj4s6m50efq7h}}"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmjllj4s6jkrox9c9",
+          "type": "text input",
+          "options": {
+            "labels": {
+              "placeholder": "回答を入力..."
+            },
+            "variableId": "cmjllj4s61gy9isru",
+            "isLong": true
+          }
+        }
+      ],
+      "outgoingEdgeId": "cmjllj4s656qeybv4"
+    },
+    {
+      "id": "cmjllj4s6woyrhlx3",
+      "title": "Update History",
+      "graphCoordinates": {
+        "x": 0,
+        "y": 400
+      },
+      "blocks": [
+        {
+          "id": "cmjllj4s6ivacexub",
+          "type": "Set variable",
+          "options": {
+            "variableId": "cmjllj4s6wpd91fhi",
+            "expressionToEvaluate": "{{cmjllj4s6wpd91fhi}}\\nUser: {{cmjllj4s61gy9isru}}\\nAI: {{cmjllj4s6m50efq7h}}",
+            "type": "Custom"
+          }
+        }
+      ],
+      "outgoingEdgeId": "cmjllj4s6hrvrjstk"
+    },
+    {
+      "id": "cmjllj4s6d2a1td4v",
+      "title": "End",
+      "graphCoordinates": {
+        "x": 1000,
+        "y": 0
+      },
+      "blocks": [
+        {
+          "id": "cmjllj4s63jioffb8",
+          "type": "text",
+          "content": {
+            "richText": [
+              {
+                "type": "p",
+                "children": [
+                  {
+                    "text": "インタビュー終了です！"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "cmjllj4s6k2q8netc",
+      "from": {
+        "eventId": "cmjllj4s671rvaa3f"
+      },
+      "to": {
+        "groupId": "cmjllj4s63jnqz67x",
+        "blockId": "cmjllj4s6b9bm83qk"
+      }
+    },
+    {
+      "id": "cmjllj4s6nw09lv3c",
+      "from": {
+        "blockId": "cmjllj4s69abbdmm2"
+      },
+      "to": {
+        "groupId": "cmjllj4s6u8zwhsaa",
+        "blockId": "cmjllj4s6w55m0ttu"
+      }
+    },
+    {
+      "id": "cmjllj4s62fulzd4d",
+      "from": {
+        "blockId": "cmjllj4s6usolbzsn"
+      },
+      "to": {
+        "groupId": "cmjllj4s6aymaj2np",
+        "blockId": "cmjllj4s63riufgrb"
+      }
+    },
+    {
+      "id": "cmjllj4s656qeybv4",
+      "from": {
+        "blockId": "cmjllj4s6jkrox9c9"
+      },
+      "to": {
+        "groupId": "cmjllj4s6woyrhlx3",
+        "blockId": "cmjllj4s6ivacexub"
+      }
+    },
+    {
+      "id": "cmjllj4s6hrvrjstk",
+      "from": {
+        "blockId": "cmjllj4s6ivacexub"
+      },
+      "to": {
+        "groupId": "cmjllj4s6u8zwhsaa",
+        "blockId": "cmjllj4s6w55m0ttu"
+      }
+    },
+    {
+      "id": "cmjllj4s64idfcj9e",
+      "from": {
+        "blockId": "cmjllj4s6usolbzsn",
+        "itemId": "cmjllj4s6kiw4r0g6"
+      },
+      "to": {
+        "groupId": "cmjllj4s6d2a1td4v",
+        "blockId": "cmjllj4s63jioffb8"
+      }
+    }
+  ]
+}

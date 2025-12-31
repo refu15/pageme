@@ -1,0 +1,280 @@
+{
+    "version": "6.1",
+    "id": "typebot-skeleton-v6",
+    "name": "AI Resume Skeleton (Import Then Edit)",
+    "events": [
+        {
+            "id": "ev-start",
+            "type": "start",
+            "outgoingEdgeId": "edge-1",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 0
+            }
+        }
+    ],
+    "variables": [
+        {
+            "id": "var-chat_history",
+            "name": "chat_history"
+        },
+        {
+            "id": "var-user_input",
+            "name": "user_input"
+        },
+        {
+            "id": "var-ai_response",
+            "name": "ai_response"
+        }
+    ],
+    "groups": [
+        {
+            "id": "grp-init",
+            "title": "1. Initialization",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 100
+            },
+            "blocks": [
+                {
+                    "id": "blk-set-start",
+                    "type": "set variable",
+                    "options": {
+                        "variableId": "var-user_input",
+                        "expressionToEvaluate": "面接開始",
+                        "type": "Custom"
+                    }
+                },
+                {
+                    "id": "blk-init-hist",
+                    "type": "set variable",
+                    "options": {
+                        "variableId": "var-chat_history",
+                        "expressionToEvaluate": " ",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-2"
+        },
+        {
+            "id": "grp-ai-placeholder",
+            "title": "2. AI Placeholder (REPLACE THIS)",
+            "graphCoordinates": {
+                "x": 400,
+                "y": 100
+            },
+            "blocks": [
+                {
+                    "id": "blk-placeholder",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "【ここをOpenAIブロックに置き換えてください】",
+                                        "bold": true
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "Message 1 (System): プロンプトを貼り付け"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "Message 2 (User): {{user_input}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "blk-fake-set",
+                    "type": "set variable",
+                    "options": {
+                        "variableId": "var-ai_response",
+                        "expressionToEvaluate": "これはダミーの応答です。",
+                        "type": "Custom"
+                    }
+                },
+                {
+                    "id": "blk-condition",
+                    "type": "Condition",
+                    "items": [
+                        {
+                            "id": "item-comp",
+                            "content": {
+                                "comparisons": [
+                                    {
+                                        "variableId": "var-ai_response",
+                                        "comparisonOperator": "Contains",
+                                        "value": "[COMPLETED]"
+                                    }
+                                ]
+                            },
+                            "outgoingEdgeId": "edge-end"
+                        }
+                    ]
+                }
+            ],
+            "outgoingEdgeId": "edge-3"
+        },
+        {
+            "id": "grp-chat",
+            "title": "3. Chat Interface",
+            "graphCoordinates": {
+                "x": 800,
+                "y": 100
+            },
+            "blocks": [
+                {
+                    "id": "blk-ai-bub",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "{{ai_response}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "blk-user-in",
+                    "type": "text input",
+                    "options": {
+                        "variableId": "var-user_input",
+                        "labels": {
+                            "placeholder": "回答を入力..."
+                        },
+                        "isLong": true
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-4"
+        },
+        {
+            "id": "grp-hist",
+            "title": "4. Update History",
+            "graphCoordinates": {
+                "x": 800,
+                "y": 600
+            },
+            "blocks": [
+                {
+                    "id": "blk-upd-hist",
+                    "type": "set variable",
+                    "options": {
+                        "variableId": "var-chat_history",
+                        "expressionToEvaluate": "{{chat_history}}\nUser: {{user_input}}\nAI: {{ai_response}}",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-loop"
+        },
+        {
+            "id": "grp-end",
+            "title": "End",
+            "graphCoordinates": {
+                "x": 1200,
+                "y": -100
+            },
+            "blocks": [
+                {
+                    "id": "blk-end",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "終了です！"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge-1",
+            "from": {
+                "eventId": "ev-start"
+            },
+            "to": {
+                "groupId": "grp-init",
+                "blockId": "blk-set-start"
+            }
+        },
+        {
+            "id": "edge-2",
+            "from": {
+                "blockId": "blk-init-hist"
+            },
+            "to": {
+                "groupId": "grp-ai-placeholder",
+                "blockId": "blk-placeholder"
+            }
+        },
+        {
+            "id": "edge-3",
+            "from": {
+                "blockId": "blk-condition"
+            },
+            "to": {
+                "groupId": "grp-chat",
+                "blockId": "blk-ai-bub"
+            }
+        },
+        {
+            "id": "edge-4",
+            "from": {
+                "blockId": "blk-user-in"
+            },
+            "to": {
+                "groupId": "grp-hist",
+                "blockId": "blk-upd-hist"
+            }
+        },
+        {
+            "id": "edge-loop",
+            "from": {
+                "blockId": "blk-upd-hist"
+            },
+            "to": {
+                "groupId": "grp-ai-placeholder",
+                "blockId": "blk-placeholder"
+            }
+        },
+        {
+            "id": "edge-end",
+            "from": {
+                "blockId": "blk-condition",
+                "itemId": "item-comp"
+            },
+            "to": {
+                "groupId": "grp-end",
+                "blockId": "blk-end"
+            }
+        }
+    ]
+}

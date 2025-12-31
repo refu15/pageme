@@ -1,0 +1,261 @@
+{
+    "version": "6.1",
+    "id": "typebot-resume-v5",
+    "name": "AI Resume Interviewer (v5)",
+    "events": [
+        {
+            "id": "eventstart0000000000025chars",
+            "type": "start",
+            "outgoingEdgeId": "edge1000000000000000025chars",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 0
+            }
+        }
+    ],
+    "variables": [
+        {
+            "id": "varchathistory00000025chars",
+            "name": "chat_history"
+        },
+        {
+            "id": "varuserinput0000000025chars",
+            "name": "user_input"
+        },
+        {
+            "id": "varairesponse000000025chars",
+            "name": "ai_response"
+        }
+    ],
+    "groups": [
+        {
+            "id": "groupinit00000000000025chars",
+            "title": "Initialization",
+            "graphCoordinates": {
+                "x": 200,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "blocksetstart0000000025chars",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "varuserinput0000000025chars",
+                        "expressionToEvaluate": "面接開始",
+                        "type": "Custom"
+                    }
+                },
+                {
+                    "id": "blockinithist000000025chars",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "varchathistory00000025chars",
+                        "expressionToEvaluate": " ",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge2000000000000000025chars"
+        },
+        {
+            "id": "groupai0000000000000025chars",
+            "title": "AI Processing",
+            "graphCoordinates": {
+                "x": 600,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "blockopenai000000000025chars",
+                    "type": "openai",
+                    "options": {
+                        "action": "Create chat completion",
+                        "model": "gpt-4o",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "あなたは優秀なキャリアコーチAIです。\n以下はこれまでの会話履歴です：\n---\n{{chat_history}}\n---\n\nこの履歴を踏まえて、ユーザーの次の発言（User Input）に対して応答してください。\n\n【面接ルール】\n1. 質問は必ず**1回につき1つ**だけにする。\n2. 履歴情報に基づき、ユーザーの回答が抽象的なら「深掘り質問」をする。\n3. 以下の必須項目を全て回収するまで会話を続ける。\n\n【必須回収項目】\n1. 基本情報（名前・所属）\n2. 役割詳細\n3. スキル・資格\n4. プロジェクト名\n5. 成果 (数字で)\n6. 困難\n7. 工夫・行動 (Action)\n8. 学び・強み\n9. 無限にできること (Infinite Fuel)\n10. やる気が削がれること (Energy Drain)\n11. 起動コマンド\n\n【終了条件】\n全項目を聞き出し終えたら、最後に `[COMPLETED]` と出力してください。"
+                            },
+                            {
+                                "role": "user",
+                                "content": "{{user_input}}"
+                            }
+                        ],
+                        "responseMapping": [
+                            {
+                                "variableId": "varairesponse000000025chars"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "blockcondition000000025chars",
+                    "type": "Condition",
+                    "items": [
+                        {
+                            "id": "itemcompleted0000000025chars",
+                            "content": {
+                                "comparisons": [
+                                    {
+                                        "variableId": "varairesponse000000025chars",
+                                        "comparisonOperator": "Contains",
+                                        "value": "[COMPLETED]"
+                                    }
+                                ]
+                            },
+                            "outgoingEdgeId": "edgeend0000000000000025chars"
+                        }
+                    ]
+                }
+            ],
+            "outgoingEdgeId": "edge3000000000000000025chars"
+        },
+        {
+            "id": "groupchatui000000000025chars",
+            "title": "Chat & Input",
+            "graphCoordinates": {
+                "x": 600,
+                "y": 400
+            },
+            "blocks": [
+                {
+                    "id": "blockaimsg0000000000025chars",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "{{ai_response}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "blockusermsg00000000025chars",
+                    "type": "text-input",
+                    "options": {
+                        "labels": {
+                            "placeholder": "回答を入力..."
+                        },
+                        "variableId": "varuserinput0000000025chars",
+                        "isLong": true
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge4000000000000000025chars"
+        },
+        {
+            "id": "groupupdatehist00000025chars",
+            "title": "History Logic",
+            "graphCoordinates": {
+                "x": 200,
+                "y": 400
+            },
+            "blocks": [
+                {
+                    "id": "blockappendhist00000025chars",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "varchathistory00000025chars",
+                        "expressionToEvaluate": "{{chat_history}}\nUser: {{user_input}}\nAI: {{ai_response}}",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edgeloop000000000000025chars"
+        },
+        {
+            "id": "groupend000000000000025chars",
+            "title": "End",
+            "graphCoordinates": {
+                "x": 1200,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "blockfinish000000000025chars",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "ありがとうございました！履歴書を作成します。"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge1000000000000000025chars",
+            "from": {
+                "eventId": "eventstart0000000000025chars"
+            },
+            "to": {
+                "groupId": "groupinit00000000000025chars",
+                "blockId": "blocksetstart0000000025chars"
+            }
+        },
+        {
+            "id": "edge2000000000000000025chars",
+            "from": {
+                "blockId": "blockinithist000000025chars"
+            },
+            "to": {
+                "groupId": "groupai0000000000000025chars",
+                "blockId": "blockopenai000000000025chars"
+            }
+        },
+        {
+            "id": "edge3000000000000000025chars",
+            "from": {
+                "blockId": "blockcondition000000025chars"
+            },
+            "to": {
+                "groupId": "groupchatui000000000025chars",
+                "blockId": "blockaimsg0000000000025chars"
+            }
+        },
+        {
+            "id": "edge4000000000000000025chars",
+            "from": {
+                "blockId": "blockusermsg00000000025chars"
+            },
+            "to": {
+                "groupId": "groupupdatehist00000025chars",
+                "blockId": "blockappendhist00000025chars"
+            }
+        },
+        {
+            "id": "edgeloop000000000000025chars",
+            "from": {
+                "blockId": "blockappendhist00000025chars"
+            },
+            "to": {
+                "groupId": "groupai0000000000000025chars",
+                "blockId": "blockopenai000000000025chars"
+            }
+        },
+        {
+            "id": "edgeend0000000000000025chars",
+            "from": {
+                "blockId": "blockcondition000000025chars",
+                "itemId": "itemcompleted0000000025chars"
+            },
+            "to": {
+                "groupId": "groupend000000000000025chars",
+                "blockId": "blockfinish000000000025chars"
+            }
+        }
+    ]
+}

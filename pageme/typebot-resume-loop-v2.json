@@ -1,0 +1,241 @@
+{
+    "version": "6",
+    "title": "AI Resume Interviewer (Loop v2)",
+    "events": [
+        {
+            "id": "start",
+            "type": "start",
+            "outgoingEdgeId": "edge-init"
+        }
+    ],
+    "variables": [
+        {
+            "id": "chat_history",
+            "name": "chat_history"
+        },
+        {
+            "id": "user_input",
+            "name": "user_input"
+        },
+        {
+            "id": "ai_response",
+            "name": "ai_response"
+        }
+    ],
+    "groups": [
+        {
+            "id": "group-init",
+            "title": "Initialization",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "block-set-start",
+                    "type": "set-variable",
+                    "content": {
+                        "variableId": "user_input",
+                        "expression": "面接開始"
+                    }
+                },
+                {
+                    "id": "block-init-history",
+                    "type": "set-variable",
+                    "content": {
+                        "variableId": "chat_history",
+                        "expression": ""
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-to-ai"
+        },
+        {
+            "id": "group-ai",
+            "title": "AI Processing",
+            "graphCoordinates": {
+                "x": 400,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "block-openai",
+                    "type": "openai",
+                    "content": {
+                        "model": "gpt-4o",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "あなたは優秀なキャリアコーチAIです。\n以下はこれまでの会話履歴です：\n---\n{{chat_history}}\n---\n\nこの履歴を踏まえて、ユーザーの次の発言（User Input）に対して応答してください。\n\n【面接ルール】\n1. 質問は必ず**1回につき1つ**だけにする。\n2. 履歴情報に基づき、ユーザーの回答が抽象的なら「深掘り質問」をする。\n3. 以下の必須項目を全て回収するまで会話を続ける。\n\n【必須回収項目】\n1. 基本情報（名前・所属）\n2. 役割詳細\n3. スキル・資格\n4. プロジェクト名\n5. 成果 (数字で)\n6. 困難\n7. 工夫・行動 (Action)\n8. 学び・強み\n9. 無限にできること (Infinite Fuel)\n10. やる気が削がれること (Energy Drain)\n11. 起動コマンド\n\n【終了条件】\n全項目を聞き出し終えたら、最後に `[COMPLETED]` と出力してください。"
+                            },
+                            {
+                                "role": "user",
+                                "content": "{{user_input}}"
+                            }
+                        ],
+                        "saveAnswerToVariableId": "ai_response"
+                    }
+                },
+                {
+                    "id": "block-check-end",
+                    "type": "condition",
+                    "content": {
+                        "items": [
+                            {
+                                "id": "cond-completed",
+                                "content": {
+                                    "comparisons": [
+                                        {
+                                            "variableId": "ai_response",
+                                            "comparisonOperator": "Contains",
+                                            "value": "[COMPLETED]"
+                                        }
+                                    ]
+                                },
+                                "outgoingEdgeId": "edge-to-end"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-to-chat"
+        },
+        {
+            "id": "group-chat_interface",
+            "title": "Chat Interface",
+            "graphCoordinates": {
+                "x": 400,
+                "y": 300
+            },
+            "blocks": [
+                {
+                    "id": "block-ai-msg",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "{{ai_response}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "block-user-input",
+                    "type": "text-input",
+                    "content": {
+                        "label": "入力してください...",
+                        "saveAnswerToVariableId": "user_input"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-update-history"
+        },
+        {
+            "id": "group-history",
+            "title": "Update History",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 300
+            },
+            "blocks": [
+                {
+                    "id": "block-append-history",
+                    "type": "set-variable",
+                    "content": {
+                        "variableId": "chat_history",
+                        "expression": "{{chat_history}}\nUser: {{user_input}}\nAI: {{ai_response}}"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-loop-back"
+        },
+        {
+            "id": "group-end",
+            "title": "End",
+            "graphCoordinates": {
+                "x": 800,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "block-end-msg",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "インタビュー終了です！履歴書を生成します..."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge-init",
+            "from": {
+                "blockId": "start"
+            },
+            "to": {
+                "groupId": "group-init"
+            }
+        },
+        {
+            "id": "edge-to-ai",
+            "from": {
+                "groupId": "group-init"
+            },
+            "to": {
+                "groupId": "group-ai"
+            }
+        },
+        {
+            "id": "edge-to-chat",
+            "from": {
+                "groupId": "group-ai"
+            },
+            "to": {
+                "groupId": "group-chat_interface"
+            }
+        },
+        {
+            "id": "edge-to-end",
+            "from": {
+                "blockId": "block-check-end",
+                "itemId": "cond-completed"
+            },
+            "to": {
+                "groupId": "group-end"
+            }
+        },
+        {
+            "id": "edge-update-history",
+            "from": {
+                "groupId": "group-chat_interface"
+            },
+            "to": {
+                "groupId": "group-history"
+            }
+        },
+        {
+            "id": "edge-loop-back",
+            "from": {
+                "groupId": "group-history"
+            },
+            "to": {
+                "groupId": "group-ai"
+            }
+        }
+    ]
+}

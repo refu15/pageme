@@ -1,0 +1,264 @@
+{
+    "version": "6",
+    "title": "Resume Generator Bot",
+    "events": [
+        {
+            "id": "start",
+            "type": "start",
+            "outgoingEdgeId": "edge-1"
+        }
+    ],
+    "groups": [
+        {
+            "id": "group-welcome",
+            "title": "Welcome",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 0
+            },
+            "blocks": [
+                {
+                    "id": "block-1",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "こんにちは！AI履歴書ジェネレーターへようこそ。"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "いくつか質問に答えるだけで、あなたの強みが伝わる履歴書を作成します。"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "block-name",
+                    "type": "text-input",
+                    "content": {
+                        "label": "まず、お名前を教えてください",
+                        "placeholder": "例：山田 太郎"
+                    },
+                    "options": {
+                        "variableId": "name"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-2"
+        },
+        {
+            "id": "group-experience",
+            "title": "Experience",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 200
+            },
+            "blocks": [
+                {
+                    "id": "block-exp-q",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "ありがとうございます。これまでの主な職務経歴や、アピールしたい実績を教えてください。"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "block-exp-input",
+                    "type": "text-input",
+                    "content": {
+                        "label": "職歴・実績",
+                        "isLong": true,
+                        "placeholder": "例：〇〇株式会社でSNSマーケティングを担当し、フォロワーを1万人増やしました..."
+                    },
+                    "options": {
+                        "variableId": "work_background"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-3"
+        },
+        {
+            "id": "group-character",
+            "title": "Character",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 400
+            },
+            "blocks": [
+                {
+                    "id": "block-str-q",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "あなたの「強み」や「得意なこと」を一言で言うと？（これがMP無限スキルになります）"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "block-str-input",
+                    "type": "text-input",
+                    "content": {
+                        "label": "強み",
+                        "placeholder": "例：0→1の立ち上げ、複雑な情報の整理..."
+                    },
+                    "options": {
+                        "variableId": "strengths"
+                    }
+                },
+                {
+                    "id": "block-weak-q",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "逆に、パフォーマンスが落ちる条件（デバフ条件）はありますか？"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "block-weak-input",
+                    "type": "text-input",
+                    "content": {
+                        "label": "苦手なこと・環境",
+                        "placeholder": "例：ゴールのない会議、単純作業の連続..."
+                    },
+                    "options": {
+                        "variableId": "debuffs"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-4"
+        },
+        {
+            "id": "group-end",
+            "title": "End",
+            "graphCoordinates": {
+                "x": 0,
+                "y": 700
+            },
+            "blocks": [
+                {
+                    "id": "block-end-msg",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "ヒアリングは以上です！AIが履歴書を生成します..."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge-1",
+            "from": {
+                "blockId": "start"
+            },
+            "to": {
+                "groupId": "group-welcome"
+            }
+        },
+        {
+            "id": "edge-2",
+            "from": {
+                "groupId": "group-welcome"
+            },
+            "to": {
+                "groupId": "group-experience"
+            }
+        },
+        {
+            "id": "edge-3",
+            "from": {
+                "groupId": "group-experience"
+            },
+            "to": {
+                "groupId": "group-character"
+            }
+        },
+        {
+            "id": "edge-4",
+            "from": {
+                "groupId": "group-character"
+            },
+            "to": {
+                "groupId": "group-end"
+            }
+        }
+    ],
+    "variables": [
+        {
+            "id": "name",
+            "name": "Name"
+        },
+        {
+            "id": "work_background",
+            "name": "Work Background"
+        },
+        {
+            "id": "strengths",
+            "name": "Strengths"
+        },
+        {
+            "id": "debuffs",
+            "name": "Debuffs"
+        }
+    ],
+    "theme": {
+        "general": {
+            "font": "Inter",
+            "background": {
+                "type": "Color",
+                "content": "#FFFFFF"
+            }
+        },
+        "chat": {
+            "hostBubbles": {
+                "backgroundColor": "#F3F4F6",
+                "color": "#1F2937"
+            },
+            "guestBubbles": {
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF"
+            }
+        }
+    }
+}

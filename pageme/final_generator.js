@@ -1,0 +1,175 @@
+const fs = require('fs');
+const path = require('path');
+
+// Base logic: Use valid CUIDs where possible or user's IDs if we want to keep them.
+// Since previous imports failed, let's use a fresh 'fixed' structure with the User's captured IDs where they match, 
+// but essentially it's a cleaner rebuild to ensure validity.
+
+const typebot = {
+    "version": "6.1",
+    "id": "typebot-resume-final",
+    "name": "AI Resume Interviewer (Final)",
+    "events": [
+        {
+            "id": "ev-start",
+            "type": "start",
+            "outgoingEdgeId": "edge-1",
+            "graphCoordinates": { "x": 0, "y": 0 }
+        }
+    ],
+    "variables": [
+        { "id": "var-chat_history", "name": "chat_history" },
+        { "id": "var-user_input", "name": "user_input" },
+        { "id": "var-ai_response", "name": "ai_response" }
+    ],
+    "groups": [
+        {
+            "id": "grp-init",
+            "title": "Initialization",
+            "graphCoordinates": { "x": 0, "y": 0 },
+            "blocks": [
+                {
+                    "id": "blk-set-start",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "var-user_input",
+                        "expressionToEvaluate": "面接開始",
+                        "type": "Custom"
+                    }
+                },
+                {
+                    "id": "blk-init-history",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "var-chat_history",
+                        "expressionToEvaluate": " ",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-2"
+        },
+        {
+            "id": "grp-ai",
+            "title": "AI Logic",
+            "graphCoordinates": { "x": 400, "y": 0 },
+            "blocks": [
+                {
+                    "id": "blk-openai",
+                    "type": "openai",
+                    "options": {
+                        "credentialsId": "", // User must select this
+                        "action": "Create chat completion",
+                        "model": "gpt-4o",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "あなたは優秀なキャリアコーチAIです。\n以下はこれまでの会話履歴です：\n---\n{{chat_history}}\n---\n\nこの履歴を踏まえて、ユーザーの次の発言（User Input）に対して応答してください。\n\n【面接ルール】\n1. 質問は必ず**1回につき1つ**だけにする。\n2. 履歴情報に基づき、ユーザーの回答が抽象的なら「深掘り質問」をする。\n3. 以下の必須項目を全て回収するまで会話を続ける。\n\n【必須回収項目】\n1. 基本情報（名前・所属）\n2. 役割詳細\n3. スキル・資格\n4. プロジェクト名\n5. 成果 (数字で)\n6. 困難\n7. 工夫・行動 (Action)\n8. 学び・強み\n9. 無限にできること (Infinite Fuel)\n10. やる気が削がれること (Energy Drain)\n11. 起動コマンド\n\n【終了条件】\n全項目を聞き出し終えたら、最後に `[COMPLETED]` と出力してください。"
+                            },
+                            {
+                                "role": "user",
+                                "content": "{{user_input}}"
+                            }
+                        ],
+                        "responseMapping": [
+                            {
+                                "variableId": "var-ai_response"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "blk-condition",
+                    "type": "Condition",
+                    "items": [
+                        {
+                            "id": "item-completed",
+                            "content": {
+                                "comparisons": [
+                                    {
+                                        "variableId": "var-ai_response",
+                                        "comparisonOperator": "Contains",
+                                        "value": "[COMPLETED]"
+                                    }
+                                ]
+                            },
+                            "outgoingEdgeId": "edge-end"
+                        }
+                    ]
+                }
+            ],
+            "outgoingEdgeId": "edge-3"
+        },
+        {
+            "id": "grp-ui",
+            "title": "Chat UI",
+            "graphCoordinates": { "x": 400, "y": 400 },
+            "blocks": [
+                {
+                    "id": "blk-text",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            { "type": "p", "children": [{ "text": "{{ai_response}}" }] }
+                        ]
+                    }
+                },
+                {
+                    "id": "blk-input",
+                    "type": "text input",
+                    "options": {
+                        "labels": { "placeholder": "回答を入力..." },
+                        "variableId": "var-user_input",
+                        "isLong": true
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-4"
+        },
+        {
+            "id": "grp-hist",
+            "title": "Update History",
+            "graphCoordinates": { "x": 0, "y": 400 },
+            "blocks": [
+                {
+                    "id": "blk-upd-hist",
+                    "type": "Set variable",
+                    "options": {
+                        "variableId": "var-chat_history",
+                        "expressionToEvaluate": "{{chat_history}}\nUser: {{user_input}}\nAI: {{ai_response}}",
+                        "type": "Custom"
+                    }
+                }
+            ],
+            "outgoingEdgeId": "edge-loop"
+        },
+        {
+            "id": "grp-end",
+            "title": "End",
+            "graphCoordinates": { "x": 1000, "y": 0 },
+            "blocks": [
+                {
+                    "id": "blk-finish",
+                    "type": "text",
+                    "content": {
+                        "richText": [
+                            { "type": "p", "children": [{ "text": "インタビュー終了です！履歴書生成に進みます。" }] }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "edges": [
+        { "id": "edge-1", "from": { "eventId": "ev-start" }, "to": { "groupId": "grp-init", "blockId": "blk-set-start" } },
+        { "id": "edge-2", "from": { "blockId": "blk-init-history" }, "to": { "groupId": "grp-ai", "blockId": "blk-openai" } },
+        { "id": "edge-3", "from": { "blockId": "blk-condition" }, "to": { "groupId": "grp-ui", "blockId": "blk-text" } },
+        { "id": "edge-4", "from": { "blockId": "blk-input" }, "to": { "groupId": "grp-hist", "blockId": "blk-upd-hist" } },
+        { "id": "edge-loop", "from": { "blockId": "blk-upd-hist" }, "to": { "groupId": "grp-ai", "blockId": "blk-openai" } },
+        { "id": "edge-end", "from": { "blockId": "blk-condition", "itemId": "item-completed" }, "to": { "groupId": "grp-end", "blockId": "blk-finish" } }
+    ]
+};
+
+const filePath = path.join(__dirname, 'typebot-resume-final.json');
+fs.writeFileSync(filePath, JSON.stringify(typebot, null, 2), 'utf8');
+console.log('Successfully wrote typebot-resume-final.json');

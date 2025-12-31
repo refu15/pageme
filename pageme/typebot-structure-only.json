@@ -1,0 +1,265 @@
+{
+  "version": "6.1",
+  "id": "typebot-structure-only",
+  "name": "AI Resume Structure (Add OpenAI Block)",
+  "events": [
+    {
+      "id": "ev-str-start",
+      "type": "start",
+      "outgoingEdgeId": "edge-str-1",
+      "graphCoordinates": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  ],
+  "variables": [
+    {
+      "id": "var-chat_history",
+      "name": "chat_history"
+    },
+    {
+      "id": "var-user_input",
+      "name": "user_input"
+    },
+    {
+      "id": "var-ai_response",
+      "name": "ai_response"
+    }
+  ],
+  "groups": [
+    {
+      "id": "grp-str-init",
+      "title": "Initialization",
+      "graphCoordinates": {
+        "x": 0,
+        "y": 0
+      },
+      "blocks": [
+        {
+          "id": "blk-str-set-start",
+          "type": "Set variable",
+          "options": {
+            "variableId": "var-user_input",
+            "expressionToEvaluate": "面接開始",
+            "type": "Custom"
+          }
+        },
+        {
+          "id": "blk-str-init-hist",
+          "type": "Set variable",
+          "options": {
+            "variableId": "var-chat_history",
+            "expressionToEvaluate": " ",
+            "type": "Custom"
+          }
+        }
+      ],
+      "outgoingEdgeId": "edge-str-2"
+    },
+    {
+      "id": "grp-str-placeholder",
+      "title": "🔴 REPLACE WITH OPENAI",
+      "graphCoordinates": {
+        "x": 400,
+        "y": 0
+      },
+      "blocks": [
+        {
+          "id": "blk-str-placeholder",
+          "type": "text",
+          "content": {
+            "richText": [
+              {
+                "type": "p",
+                "children": [
+                  {
+                    "text": "【ここを削除して OpenAI ブロックを置いてください】",
+                    "bold": true,
+                    "color": "rgb(255, 0, 0)"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "blk-str-fake-resp",
+          "type": "Set variable",
+          "options": {
+            "variableId": "var-ai_response",
+            "expressionToEvaluate": "※ここにAIの返答が入ります",
+            "type": "Custom"
+          }
+        },
+        {
+          "id": "blk-str-cond",
+          "type": "Condition",
+          "items": [
+            {
+              "id": "item-str-comp",
+              "content": {
+                "comparisons": [
+                  {
+                    "variableId": "var-ai_response",
+                    "comparisonOperator": "Contains",
+                    "value": "[COMPLETED]"
+                  }
+                ]
+              },
+              "outgoingEdgeId": "edge-str-end"
+            }
+          ]
+        }
+      ],
+      "outgoingEdgeId": "edge-str-3"
+    },
+    {
+      "id": "grp-str-ui",
+      "title": "Chat UI",
+      "graphCoordinates": {
+        "x": 400,
+        "y": 400
+      },
+      "blocks": [
+        {
+          "id": "blk-str-text",
+          "type": "text",
+          "content": {
+            "richText": [
+              {
+                "type": "p",
+                "children": [
+                  {
+                    "text": "{{ai_response}}"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "blk-str-input",
+          "type": "text input",
+          "options": {
+            "labels": {
+              "placeholder": "回答を入力..."
+            },
+            "variableId": "var-user_input",
+            "isLong": true
+          }
+        }
+      ],
+      "outgoingEdgeId": "edge-str-4"
+    },
+    {
+      "id": "grp-str-hist",
+      "title": "History Update",
+      "graphCoordinates": {
+        "x": 0,
+        "y": 400
+      },
+      "blocks": [
+        {
+          "id": "blk-str-upd",
+          "type": "Set variable",
+          "options": {
+            "variableId": "var-chat_history",
+            "expressionToEvaluate": "{{chat_history}}\nUser: {{user_input}}\nAI: {{ai_response}}",
+            "type": "Custom"
+          }
+        }
+      ],
+      "outgoingEdgeId": "edge-str-loop"
+    },
+    {
+      "id": "grp-str-end",
+      "title": "End",
+      "graphCoordinates": {
+        "x": 1000,
+        "y": 0
+      },
+      "blocks": [
+        {
+          "id": "blk-str-finish",
+          "type": "text",
+          "content": {
+            "richText": [
+              {
+                "type": "p",
+                "children": [
+                  {
+                    "text": "インタビュー終了です！"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-str-1",
+      "from": {
+        "eventId": "ev-str-start"
+      },
+      "to": {
+        "groupId": "grp-str-init",
+        "blockId": "blk-str-set-start"
+      }
+    },
+    {
+      "id": "edge-str-2",
+      "from": {
+        "blockId": "blk-str-init-hist"
+      },
+      "to": {
+        "groupId": "grp-str-placeholder",
+        "blockId": "blk-str-placeholder"
+      }
+    },
+    {
+      "id": "edge-str-3",
+      "from": {
+        "blockId": "blk-str-cond"
+      },
+      "to": {
+        "groupId": "grp-str-ui",
+        "blockId": "blk-str-text"
+      }
+    },
+    {
+      "id": "edge-str-4",
+      "from": {
+        "blockId": "blk-str-input"
+      },
+      "to": {
+        "groupId": "grp-str-hist",
+        "blockId": "blk-str-upd"
+      }
+    },
+    {
+      "id": "edge-str-loop",
+      "from": {
+        "blockId": "blk-str-upd"
+      },
+      "to": {
+        "groupId": "grp-str-placeholder",
+        "blockId": "blk-str-placeholder"
+      }
+    },
+    {
+      "id": "edge-str-end",
+      "from": {
+        "blockId": "blk-str-cond",
+        "itemId": "item-str-comp"
+      },
+      "to": {
+        "groupId": "grp-str-end",
+        "blockId": "blk-str-finish"
+      }
+    }
+  ]
+}
