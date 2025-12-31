@@ -2,6 +2,7 @@
 
 import { UserManual } from "@/lib/types/onboarding";
 import { ALL_SKILLS, INITIAL_SKILLS, SKILL_CATEGORIES } from "@/lib/data/skills";
+import { getIndustryRecommendedSkills } from "@/lib/data/recommended-skills";
 import { Wrench, Check, Plus, ChevronDown, Search } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,16 @@ export function Step2Skills({ data, onUpdate }: Step2Props) {
         if (activeCategory && SKILL_CATEGORIES[activeCategory as keyof typeof SKILL_CATEGORIES]) {
             const cat = SKILL_CATEGORIES[activeCategory as keyof typeof SKILL_CATEGORIES];
             skills = ALL_SKILLS.slice(cat.start, cat.end);
+        } else if (!activeCategory && !searchQuery) {
+            // 職種別おすすめ順（すべて表示時）
+            const industry = data.industry;
+            if (industry) {
+                const recommended = getIndustryRecommendedSkills(industry);
+                if (recommended.length > 0) {
+                    const others = ALL_SKILLS.filter(s => !recommended.includes(s));
+                    skills = [...recommended, ...others];
+                }
+            }
         }
 
         // 検索フィルター
@@ -37,7 +48,7 @@ export function Step2Skills({ data, onUpdate }: Step2Props) {
         }
 
         return skills;
-    }, [activeCategory, searchQuery]);
+    }, [activeCategory, searchQuery, data.industry]);
 
     const displayedSkills = filteredSkills.slice(0, showCount);
     const hasMore = showCount < filteredSkills.length;
