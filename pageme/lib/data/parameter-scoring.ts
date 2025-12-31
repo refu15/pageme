@@ -49,7 +49,7 @@ export function calculateParameterScores(profile: ProfileData): ParameterScore[]
     const decision = profile.work_style.decision_style; // specific values depend on form
     // Assuming keywords or simple string matching if exact values aren't strictly typed yet
     if (decision.includes('論理') || decision.includes('データ')) add('logic', 10);
-    if (decision.includes('直感') || decision.includes('走りながら')) add('flexibility', 15); // Note: key is 'flexible'
+    if (decision.includes('直感') || decision.includes('走りながら')) add('flexible', 15); // Note: key is 'flexible'
     if (decision.includes('慎重') || decision.includes('計画')) add('steady', 10);
 
     // --- 2. Roles (Simple Keyword Match) ---
