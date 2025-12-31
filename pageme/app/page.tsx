@@ -11,7 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    const redirectTo = `${window.location.origin}/onboarding`;
+    const redirectTo = `${window.location.origin}/profile`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
