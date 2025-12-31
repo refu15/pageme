@@ -92,29 +92,23 @@ export default function ProfilePage() {
                     .select('*')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
-                    .limit(1)
-                    .single();
+                    .limit(1);
 
-                if (error) {
-                    // PGRST116 means no rows returned (user has no results)
-                    if (error.code === 'PGRST116') {
-                        router.push('/onboarding');
-                        return;
-                    }
-                    throw error;
-                }
+                if (error) throw error;
 
-                if (!data) {
+                if (!data || data.length === 0) {
                     router.push('/onboarding');
                     return;
                 }
 
-                const pData = data.profile_data as ProfileData;
-                const aInsights = data.ai_insights as AIInsights;
+                const resultRow = data[0];
+
+                const pData = resultRow.profile_data as ProfileData;
+                const aInsights = resultRow.ai_insights as AIInsights;
 
                 setProfileData(pData);
                 setAiInsights(aInsights);
-                setResultId(data.id);
+                setResultId(resultRow.id);
 
                 const result = matchAnimal({
                     work_style: pData.work_style,
