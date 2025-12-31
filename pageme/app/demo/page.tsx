@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 import { INDUSTRY_CATEGORIES } from "@/lib/data/industries";
 import { matchAnimal, getAnimalAvatarUrl, AnimalMatch, AnimalResult } from "@/lib/data/animal-matching";
 import { BrushCircle, BrushHeart, BrushStar, BrushWave, BrushSpiral, BrushVerticalLine } from "@/components/brush/BrushElements";
@@ -9,7 +11,7 @@ import { AnimalRadarModal } from "@/components/demo/AnimalRadarModal";
 import { ExpandableBio } from "@/components/demo/ExpandableBio";
 import { ZukanCard } from "@/components/demo/ZukanCard";
 import { ExportPreviewModal } from "@/components/demo/ExportPreviewModal";
-import { Loader2, Zap, Info, Share2, Download, Check } from "lucide-react";
+import { Loader2, Zap, Info, Share2, Download, Check, Save } from "lucide-react";
 import { toPng, toBlob } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
@@ -63,6 +65,8 @@ interface AIInsights {
 }
 
 export default function DemoPage() {
+    const router = useRouter();
+    const [isSaving, setIsSaving] = useState(false);
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
@@ -426,6 +430,42 @@ export default function DemoPage() {
         }
     };
 
+    const handleSaveAndShare = async () => {
+        if (!profileData || !aiInsights) return;
+
+        setIsSaving(true);
+        try {
+            const insightsToSave = {
+                ...aiInsights,
+                avatar_url: aiAvatarUrl
+            };
+
+            const userRes = await supabase.auth.getUser();
+            const user = userRes.data.user;
+
+            const { data, error } = await supabase
+                .from('analysis_results')
+                .insert({
+                    user_id: user?.id || null,
+                    profile_data: profileData,
+                    ai_insights: insightsToSave
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            router.push(`/result/${data.id}`);
+
+        } catch (err) {
+            console.error('Save failed:', err);
+            const msg = err instanceof Error ? err.message : String(err);
+            alert('保存に失敗しました: ' + msg);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     // --- Format Activation Command ---
     const formattedCommand = profileData.activation_command
         ? profileData.activation_command.split(/([。！？\n])/).reduce((acc: string[], part: string) => {
@@ -521,22 +561,31 @@ export default function DemoPage() {
                     <Info className="w-4 h-4 opacity-50 group-hover:opacity-100" />
                 </button>
 
-                {/* Export Button */}
+                {/* Actions */}
                 {aiInsights && (
-                    <button
-                        onClick={() => setIsExportPreviewOpen(true)}
-                        disabled={isExporting}
-                        className="mb-12 flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white font-bold border-2 border-[#0A0A0A] shadow-[4px_4px_0px_0px_rgba(200,80,80,1)] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(200,80,80,1)] transition-all"
-                    >
-                        {isExporting ? (
-                            <>保存中...</>
-                        ) : (
-                            <>
-                                <Download className="w-4 h-4" />
-                                図鑑カードとして保存
-                            </>
-                        )}
-                    </button>
+                    <div className="flex flex-col gap-4 mb-12 items-center w-full max-w-md">
+                        <button
+                            onClick={handleSaveAndShare}
+                            disabled={isSaving}
+                            className="w-full flex justify-center items-center gap-2 px-6 py-4 bg-[#0A0A0A] text-white font-bold border-2 border-[#0A0A0A] shadow-[4px_4px_0px_0px_rgba(230,57,70,1)] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(230,57,70,1)] transition-all rounded-full text-lg"
+                        >
+                            {isSaving ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <Save className="w-5 h-5" />
+                            )}
+                            結果を保存して共有リンクを発行
+                        </button>
+
+                        <button
+                            onClick={() => setIsExportPreviewOpen(true)}
+                            disabled={isExporting}
+                            className="text-sm text-[#888] hover:text-[#0A0A0A] hover:bg-[#F0F0F0] px-4 py-2 rounded-full transition-colors flex items-center gap-2"
+                        >
+                            <Download className="w-4 h-4" />
+                            画像/PDFとしてダウンロードのみ行う
+                        </button>
+                    </div>
                 )}
 
                 {/* メインコピー */}
